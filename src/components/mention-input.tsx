@@ -1,23 +1,22 @@
-import React, { FC, MutableRefObject, useMemo, useRef, useState } from "react";
+import React, {MutableRefObject, useMemo, useRef, useState} from 'react';
 import {
   NativeSyntheticEvent,
   Text,
   TextInput,
   TextInputSelectionChangeEventData,
   View,
-} from "react-native";
+} from 'react-native';
 
-import { MentionInputProps, MentionPartType, Suggestion } from "../types";
+import {MentionInputProps, MentionPartType, Suggestion} from '../types';
 import {
   defaultMentionTextStyle,
   generateValueFromPartsAndChangedText,
   generateValueWithAddedSuggestion,
   getMentionPartSuggestionKeywords,
-  isMentionPartType,
   parseValue,
-} from "../utils";
+} from '../utils';
 
-const MentionInput: FC<MentionInputProps> = ({
+const MentionInput = ({
   value,
   onChange,
 
@@ -29,19 +28,23 @@ const MentionInput: FC<MentionInputProps> = ({
 
   onSelectionChange,
 
+  renderListSuggestions,
+
+  renderListSelection,
+
   ...textInputProps
-}) => {
+}: MentionInputProps) => {
   const textInput = useRef<TextInput | null>(null);
 
-  const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const [selection, setSelection] = useState({start: 0, end: 0});
 
-  const { plainText, parts } = useMemo(
+  const {plainText, parts} = useMemo(
     () => parseValue(value, partTypes),
-    [value, partTypes]
+    [value, partTypes],
   );
 
   const handleSelectionChange = (
-    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>
+    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
   ) => {
     setSelection(event.nativeEvent.selection);
 
@@ -55,7 +58,7 @@ const MentionInput: FC<MentionInputProps> = ({
    */
   const onChangeInput = (changedText: string) => {
     onChange(
-      generateValueFromPartsAndChangedText(parts, plainText, changedText)
+      generateValueFromPartsAndChangedText(parts, plainText, changedText),
     );
   };
 
@@ -67,7 +70,7 @@ const MentionInput: FC<MentionInputProps> = ({
       parts,
       plainText,
       selection,
-      partTypes
+      partTypes,
     );
   }, [parts, plainText, selection, partTypes]);
 
@@ -77,13 +80,15 @@ const MentionInput: FC<MentionInputProps> = ({
    * - Trigger onChange callback with new value
    */
   const onSuggestionPress =
-    (mentionType: MentionPartType) => (suggestion: Suggestion) => {
+    (mentionType: MentionPartType, isSuggestion = true) =>
+    (suggestion: Suggestion) => {
       const newValue = generateValueWithAddedSuggestion(
         parts,
         mentionType,
         plainText,
         selection,
-        suggestion
+        suggestion,
+        isSuggestion,
       );
 
       if (!newValue) {
@@ -110,7 +115,7 @@ const MentionInput: FC<MentionInputProps> = ({
     textInput.current = ref as TextInput;
 
     if (propInputRef) {
-      if (typeof propInputRef === "function") {
+      if (typeof propInputRef === 'function') {
         propInputRef(ref);
       } else {
         (propInputRef as MutableRefObject<TextInput>).current =
@@ -119,60 +124,43 @@ const MentionInput: FC<MentionInputProps> = ({
     }
   };
 
-  const renderMentionSuggestions = (mentionType: MentionPartType) => (
-    <React.Fragment key={mentionType.trigger}>
-      {mentionType.renderSuggestions &&
-        mentionType.renderSuggestions({
-          keyword: keywordByTrigger[mentionType.trigger],
-          onSuggestionPress: onSuggestionPress(mentionType),
-        })}
-    </React.Fragment>
-  );
-
   return (
-    <View style={containerStyle}>
-      {(
-        partTypes.filter(
-          (one) =>
-            isMentionPartType(one) &&
-            one.renderSuggestions != null &&
-            !one.isBottomMentionSuggestionsRender
-        ) as MentionPartType[]
-      ).map(renderMentionSuggestions)}
+    <>
+      {renderListSelection?.({
+        onSuggestionPress: onSuggestionPress(
+          partTypes[0] as MentionPartType,
+          false,
+        ),
+      })}
+      <View style={containerStyle}>
+        <TextInput
+          multiline
+          {...textInputProps}
+          ref={handleTextInputRef}
+          onChangeText={onChangeInput}
+          onSelectionChange={handleSelectionChange}>
+          <Text>
+            {parts.map(({text, partType, data}, index) =>
+              partType ? (
+                <Text
+                  key={`${index}-${data?.trigger ?? 'pattern'}`}
+                  style={partType.textStyle ?? defaultMentionTextStyle}>
+                  {text}
+                </Text>
+              ) : (
+                <Text key={index}>{text}</Text>
+              ),
+            )}
+          </Text>
+        </TextInput>
 
-      <TextInput
-        multiline
-        {...textInputProps}
-        ref={handleTextInputRef}
-        onChangeText={onChangeInput}
-        onSelectionChange={handleSelectionChange}
-      >
-        <Text>
-          {parts.map(({ text, partType, data }, index) =>
-            partType ? (
-              <Text
-                key={`${index}-${data?.trigger ?? "pattern"}`}
-                style={partType.textStyle ?? defaultMentionTextStyle}
-              >
-                {text}
-              </Text>
-            ) : (
-              <Text key={index}>{text}</Text>
-            )
-          )}
-        </Text>
-      </TextInput>
-
-      {(
-        partTypes.filter(
-          (one) =>
-            isMentionPartType(one) &&
-            one.renderSuggestions != null &&
-            one.isBottomMentionSuggestionsRender
-        ) as MentionPartType[]
-      ).map(renderMentionSuggestions)}
-    </View>
+        {renderListSuggestions({
+          keyword: keywordByTrigger['#'],
+          onSuggestionPress: onSuggestionPress(partTypes[0] as MentionPartType),
+        })}
+      </View>
+    </>
   );
 };
 
-export { MentionInput };
+export {MentionInput};

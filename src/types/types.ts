@@ -1,15 +1,15 @@
-import type { Change } from "diff";
-import type { ReactNode, Ref } from "react";
+import type {Change} from 'diff';
+import type {FC, Ref} from 'react';
 import type {
   StyleProp,
   TextInput,
   TextInputProps,
   TextStyle,
   ViewStyle,
-} from "react-native";
+} from 'react-native';
 
 type Suggestion = {
-  id: string;
+  id: number;
   title: string;
 };
 
@@ -17,10 +17,10 @@ type MentionData = {
   original: string;
   trigger: string;
   title: string;
-  id: string;
+  id: number;
 };
 
-type CharactersDiffChange = Omit<Change, "count"> & { count: number };
+type CharactersDiffChange = Omit<Change, 'count'> & {count: number};
 
 type RegexMatchResult = string[] & {
   // Matched string
@@ -36,7 +36,7 @@ type RegexMatchResult = string[] & {
   3: string;
 
   // id
-  4: string;
+  4: number;
 
   // Start position of matched text in whole string
   index: number;
@@ -61,7 +61,7 @@ type MentionPartType = {
   trigger: string;
 
   // Function for render suggestions
-  renderSuggestions?: (props: MentionSuggestionsProps) => ReactNode;
+  // renderSuggestions?: (props: MentionSuggestionsProps) => ReactNode;
 
   // How much spaces are allowed for mention keyword
   allowedSpacesCount?: number;
@@ -70,7 +70,7 @@ type MentionPartType = {
   isInsertSpaceAfterMention?: boolean;
 
   // Should we render either at the top or bottom of the input
-  isBottomMentionSuggestionsRender?: boolean;
+  // isBottomMentionSuggestionsRender?: boolean;
 
   // Custom mention styles in text input
   textStyle?: StyleProp<TextStyle>;
@@ -97,7 +97,7 @@ type Part = {
   data?: MentionData;
 };
 
-type MentionInputProps = Omit<TextInputProps, "onChange"> & {
+type MentionInputProps = Omit<TextInputProps, 'onChange'> & {
   value: string;
   onChange: (value: string) => any;
 
@@ -106,6 +106,10 @@ type MentionInputProps = Omit<TextInputProps, "onChange"> & {
   inputRef?: Ref<TextInput>;
 
   containerStyle?: StyleProp<ViewStyle>;
+
+  renderListSuggestions: FC<MentionSuggestionsProps>;
+
+  renderListSelection?: FC<Pick<MentionSuggestionsProps, 'onSuggestionPress'>>;
 };
 
 export type {
