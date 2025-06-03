@@ -1,7 +1,7 @@
-import {diffChars} from 'diff';
-import {StyleProp, TextStyle} from 'react-native';
+import { diffChars } from "diff";
+import { StyleProp, TextStyle } from "react-native";
 // @ts-ignore the lib do not have TS declarations yet
-import matchAll from 'string.prototype.matchall';
+import matchAll from "string.prototype.matchall";
 import {
   CharactersDiffChange,
   MentionData,
@@ -11,7 +11,7 @@ import {
   Position,
   RegexMatchResult,
   Suggestion,
-} from '../types';
+} from "../types";
 
 /**
  * RegEx grouped results. Example - "@[Full Name](123abc)"
@@ -27,13 +27,13 @@ import {
 const mentionRegEx = /((.)\[#([^[]*)]\(([^(^)]*)\))/gi;
 
 const defaultMentionTextStyle: StyleProp<TextStyle> = {
-  fontWeight: 'bold',
-  color: 'blue',
+  fontWeight: "bold",
+  color: "blue",
 };
 
 const defaultPlainStringGenerator = (
-  {trigger}: MentionPartType,
-  {title}: MentionData,
+  { trigger }: MentionPartType,
+  { title }: MentionData
 ) => `${trigger}${title}`;
 
 const isMentionPartType = (partType: PartType): partType is MentionPartType => {
@@ -43,12 +43,12 @@ const isMentionPartType = (partType: PartType): partType is MentionPartType => {
 const getPartIndexByCursor = (
   parts: Part[],
   cursor: number,
-  isIncludeEnd?: boolean,
+  isIncludeEnd?: boolean
 ) => {
-  return parts.findIndex(one =>
+  return parts.findIndex((one) =>
     cursor >= one.position.start && isIncludeEnd
       ? cursor <= one.position.end
-      : cursor < one.position.end,
+      : cursor < one.position.end
   );
 };
 
@@ -71,7 +71,7 @@ const getPartIndexByCursor = (
 const getPartsInterval = (
   parts: Part[],
   cursor: number,
-  count: number,
+  count: number
 ): Part[] => {
   const newCursor = cursor + count;
 
@@ -96,15 +96,15 @@ const getPartsInterval = (
   } else {
     partsInterval.push(
       generatePlainTextPart(
-        currentPart.text.substr(cursor - currentPart.position.start, count),
-      ),
+        currentPart.text.substr(cursor - currentPart.position.start, count)
+      )
     );
   }
 
   if (newPartIndex > currentPartIndex) {
     // Concat fully included parts
     partsInterval = partsInterval.concat(
-      parts.slice(currentPartIndex + 1, newPartIndex),
+      parts.slice(currentPartIndex + 1, newPartIndex)
     );
 
     // Push whole last affected part or sub-part of the last affected part
@@ -116,8 +116,8 @@ const getPartsInterval = (
     } else {
       partsInterval.push(
         generatePlainTextPart(
-          newPart.text.substr(0, newCursor - newPart.position.start),
-        ),
+          newPart.text.substr(0, newCursor - newPart.position.start)
+        )
       );
     }
   }
@@ -146,13 +146,13 @@ const getMentionPartSuggestionKeywords = (
   parts: Part[],
   plainText: string,
   selection: Position,
-  partTypes: PartType[],
-): {[trigger: string]: string | undefined} => {
-  const keywordByTrigger: {[trigger: string]: string | undefined} = {};
+  partTypes: PartType[]
+): { [trigger: string]: string | undefined } => {
+  const keywordByTrigger: { [trigger: string]: string | undefined } = {};
 
   partTypes
     .filter(isMentionPartType)
-    .forEach(({trigger, allowedSpacesCount = 1}) => {
+    .forEach(({ trigger, allowedSpacesCount = 1 }) => {
       keywordByTrigger[trigger] = undefined;
 
       // Check if we don't have selection range
@@ -162,9 +162,9 @@ const getMentionPartSuggestionKeywords = (
 
       // Find the part with the cursor
       const part = parts.find(
-        one =>
+        (one) =>
           selection.end > one.position.start &&
-          selection.end <= one.position.end,
+          selection.end <= one.position.end
       );
 
       // Check if the cursor is not in mention type part
@@ -194,12 +194,12 @@ const getMentionPartSuggestionKeywords = (
         cursor -= 1
       ) {
         // Mention cannot have new line
-        if (plainText[cursor] === '\n') {
+        if (plainText[cursor] === "\n") {
           return;
         }
 
         // Incrementing space counter if the next symbol is space
-        if (plainText[cursor] === ' ') {
+        if (plainText[cursor] === " ") {
           spacesCount += 1;
 
           // Check maximum allowed spaces in trigger word
@@ -211,7 +211,7 @@ const getMentionPartSuggestionKeywords = (
 
       keywordByTrigger[trigger] = plainText.substring(
         triggerIndex + 1,
-        selection.end,
+        selection.end
       );
     });
 
@@ -228,18 +228,18 @@ const getMentionPartSuggestionKeywords = (
 const generateValueFromPartsAndChangedText = (
   parts: Part[],
   originalText: string,
-  changedText: string,
+  changedText: string
 ) => {
   const changes = diffChars(
     originalText,
-    changedText,
+    changedText
   ) as CharactersDiffChange[];
 
   let newParts: Part[] = [];
 
   let cursor = 0;
 
-  changes.forEach(change => {
+  changes.forEach((change) => {
     switch (true) {
       /**
        * We should:
@@ -269,7 +269,7 @@ const generateValueFromPartsAndChangedText = (
       default: {
         if (change.count !== 0) {
           newParts = newParts.concat(
-            getPartsInterval(parts, cursor, change.count),
+            getPartsInterval(parts, cursor, change.count)
           );
 
           cursor += change.count;
@@ -304,13 +304,24 @@ const generateValueWithAddedSuggestion = (
   plainText: string,
   selection: Position,
   suggestion: Suggestion,
-  isSuggestion: boolean,
+  isSuggestion: boolean
 ): string | undefined => {
+  console.log(
+    "🚀 generateValueWithAddedSuggestion",
+    `\n\nparts: ${JSON.stringify(parts)}`
+  );
+
   const currentPartIndex = parts.findIndex(
-    one =>
-      selection.end >= one.position.start && selection.end <= one.position.end,
+    (one) =>
+      selection.end >= one.position.start && selection.end <= one.position.end
   );
   const currentPart = parts[currentPartIndex];
+
+  console.log(
+    "🚀 currentPartIndex:",
+    currentPartIndex,
+    `\ncurrentPart: ${JSON.stringify(currentPart)}`
+  );
 
   if (!currentPart) {
     return;
@@ -318,7 +329,7 @@ const generateValueWithAddedSuggestion = (
 
   const triggerPartIndex = currentPart.text.lastIndexOf(
     mentionType.trigger,
-    selection.end - currentPart.position.start,
+    selection.end - currentPart.position.start
   );
 
   const newMentionPartPosition: Position = {
@@ -328,21 +339,14 @@ const generateValueWithAddedSuggestion = (
     end: selection.end - currentPart.position.start,
   };
 
-  const isInsertSpaceToNextPart =
-    mentionType.isInsertSpaceAfterMention &&
-    // Cursor is at the very end of parts or text row
-    (plainText.length === selection.end ||
-      parts[currentPartIndex]?.text.startsWith(
-        '\n',
-        newMentionPartPosition.end,
-      ));
+  const isInsertSpaceToNextPart = mentionType.isInsertSpaceAfterMention;
 
   return getValueFromParts([
     ...parts.slice(0, currentPartIndex),
 
     // Create part with string before mention
     generatePlainTextPart(
-      currentPart.text.substring(0, newMentionPartPosition.start),
+      currentPart.text.substring(0, newMentionPartPosition.start)
     ),
     generateMentionPart(mentionType, {
       original: getMentionValue(mentionType.trigger, suggestion),
@@ -352,9 +356,9 @@ const generateValueWithAddedSuggestion = (
 
     // Create part with rest of string after mention and add a space if needed
     generatePlainTextPart(
-      `${isInsertSpaceToNextPart ? ' ' : ''}${currentPart.text.substring(
-        newMentionPartPosition.end,
-      )}`,
+      `${isInsertSpaceToNextPart ? " " : ""}${currentPart.text.substring(
+        newMentionPartPosition.end
+      )}`
     ),
 
     ...parts.slice(currentPartIndex + 1),
@@ -385,7 +389,7 @@ const generatePlainTextPart = (text: string, positionOffset = 0): Part => ({
 const generateMentionPart = (
   mentionPartType: MentionPartType,
   mention: MentionData,
-  positionOffset = 0,
+  positionOffset = 0
 ): Part => {
   const text = mentionPartType.getPlainString
     ? mentionPartType.getPlainString(mention)
@@ -412,7 +416,7 @@ const generateMentionPart = (
 const generateRegexResultPart = (
   partType: PartType,
   result: RegexMatchResult,
-  positionOffset = 0,
+  positionOffset = 0
 ): Part => ({
   text: result[0],
   position: {
@@ -454,13 +458,13 @@ const getMentionDataFromRegExMatchResult = ([
 const parseValue = (
   value: string,
   partTypes: PartType[],
-  positionOffset = 0,
-): {plainText: string; parts: Part[]} => {
+  positionOffset = 0
+): { plainText: string; parts: Part[] } => {
   if (value == null) {
-    value = '';
+    value = "";
   }
 
-  let plainText = '';
+  let plainText = "";
   let parts: Part[] = [];
 
   // We don't have any part types so adding just plain text part
@@ -473,7 +477,7 @@ const parseValue = (
     const regex = isMentionPartType(partType) ? mentionRegEx : partType.pattern;
 
     const matches: RegexMatchResult[] = Array.from(
-      matchAll(value ?? '', regex),
+      matchAll(value ?? "", regex)
     );
 
     // In case when we didn't get any matches continue parsing value with rest part types
@@ -503,7 +507,7 @@ const parseValue = (
           const plainTextAndParts = parseValue(
             mentionData.original,
             restPartTypes,
-            positionOffset + plainText.length,
+            positionOffset + plainText.length
           );
           parts = parts.concat(plainTextAndParts.parts);
           plainText += plainTextAndParts.plainText;
@@ -511,7 +515,7 @@ const parseValue = (
           const part = generateMentionPart(
             partType,
             mentionData,
-            positionOffset + plainText.length,
+            positionOffset + plainText.length
           );
 
           parts.push(part);
@@ -522,7 +526,7 @@ const parseValue = (
         const part = generateRegexResultPart(
           partType,
           result,
-          positionOffset + plainText.length,
+          positionOffset + plainText.length
         );
 
         parts.push(part);
@@ -539,13 +543,13 @@ const parseValue = (
         // So we should to add the last substring of value after matched mention
         const text = value.slice(
           result.index + result[0].length,
-          isLastResult ? undefined : matches[i + 1].index,
+          isLastResult ? undefined : matches[i + 1].index
         );
 
         const plainTextAndParts = parseValue(
           text,
           restPartTypes,
-          positionOffset + plainText.length,
+          positionOffset + plainText.length
         );
         parts = parts.concat(plainTextAndParts.parts);
         plainText += plainTextAndParts.plainText;
@@ -566,7 +570,7 @@ const parseValue = (
  * @param parts
  */
 const getValueFromParts = (parts: Part[]) =>
-  parts.map(item => (item.data ? item.data.original : item.text)).join('');
+  parts.map((item) => (item.data ? item.data.original : item.text)).join("");
 
 /**
  * Replace all mention values in value to some specified format
@@ -576,7 +580,7 @@ const getValueFromParts = (parts: Part[]) =>
  */
 const replaceMentionValues = (
   value: string,
-  replacer: (mention: MentionData) => string,
+  replacer: (mention: MentionData) => string
 ) =>
   value.replace(mentionRegEx, (fullMatch, original, trigger, title, id) =>
     replacer({
@@ -584,7 +588,7 @@ const replaceMentionValues = (
       trigger,
       title,
       id,
-    }),
+    })
   );
 
 export {

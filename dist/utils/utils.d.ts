@@ -1,5 +1,5 @@
-import { StyleProp, TextStyle } from 'react-native';
-import { MentionData, MentionPartType, Part, PartType, Position, Suggestion } from '../types';
+import { StyleProp, TextStyle } from "react-native";
+import { MentionData, MentionPartType, Part, PartType, Position, Suggestion } from "../types";
 /**
  * RegEx grouped results. Example - "@[Full Name](123abc)"
  * We have 4 groups here:

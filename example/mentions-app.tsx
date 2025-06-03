@@ -3,18 +3,18 @@ import { FC, useState } from "react";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 import { MentionInput, MentionSuggestionsProps, Suggestion } from "../src";
 
-const users = [
-  { id: "1", title: "David Tabaka" },
-  { id: "2", title: "Mary" },
-  { id: "3", title: "Tony" },
-  { id: "4", title: "Mike" },
-  { id: "5", title: "Grey" },
+const users: Suggestion[] = [
+  { id: 1, title: "David Tabaka" },
+  { id: 2, title: "Mary" },
+  { id: 3, title: "Tony" },
+  { id: 4, title: "Mike" },
+  { id: 5, title: "Grey" },
 ];
 
 const hashtags = [
-  { id: "todo", title: "todo" },
-  { id: "help", title: "help" },
-  { id: "loveyou", title: "loveyou" },
+  { id: 1, title: "todo" },
+  { id: 2, title: "help" },
+  { id: 3, title: "loveyou" },
 ];
 
 const renderSuggestions: (

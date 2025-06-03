@@ -1,12 +1,12 @@
-import type {Change} from 'diff';
-import type {FC, Ref} from 'react';
+import type { Change } from "diff";
+import type { FC, Ref } from "react";
 import type {
   StyleProp,
   TextInput,
   TextInputProps,
   TextStyle,
   ViewStyle,
-} from 'react-native';
+} from "react-native";
 
 type Suggestion = {
   id: number;
@@ -20,7 +20,7 @@ type MentionData = {
   id: number;
 };
 
-type CharactersDiffChange = Omit<Change, 'count'> & {count: number};
+type CharactersDiffChange = Omit<Change, "count"> & { count: number };
 
 type RegexMatchResult = string[] & {
   // Matched string
@@ -95,9 +95,10 @@ type Part = {
   partType?: PartType;
 
   data?: MentionData;
+  cursorPosition?: number;
 };
 
-type MentionInputProps = Omit<TextInputProps, 'onChange'> & {
+type MentionInputProps = Omit<TextInputProps, "onChange"> & {
   value: string;
   onChange: (value: string) => any;
 
@@ -109,7 +110,7 @@ type MentionInputProps = Omit<TextInputProps, 'onChange'> & {
 
   renderListSuggestions: FC<MentionSuggestionsProps>;
 
-  renderListSelection?: FC<Pick<MentionSuggestionsProps, 'onSuggestionPress'>>;
+  renderListSelection?: FC<Pick<MentionSuggestionsProps, "onSuggestionPress">>;
 };
 
 export type {

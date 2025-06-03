@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -36,59 +40,57 @@ const react_native_1 = require("react-native");
 const utils_1 = require("../utils");
 const MentionInput = (_a) => {
     var { value, onChange, partTypes = [], inputRef: propInputRef, containerStyle, onSelectionChange, renderListSuggestions, renderListSelection } = _a, textInputProps = __rest(_a, ["value", "onChange", "partTypes", "inputRef", "containerStyle", "onSelectionChange", "renderListSuggestions", "renderListSelection"]);
-    const textInput = react_1.useRef(null);
-    const [selection, setSelection] = react_1.useState({ start: 0, end: 0 });
-    const { plainText, parts } = react_1.useMemo(() => utils_1.parseValue(value, partTypes), [value, partTypes]);
+    const textInput = (0, react_1.useRef)(null);
+    const [selection, setSelection] = (0, react_1.useState)({ start: 0, end: 0 });
+    const { plainText, parts } = (0, react_1.useMemo)(() => (0, utils_1.parseValue)(value, partTypes), [value, partTypes]);
     const handleSelectionChange = (event) => {
         setSelection(event.nativeEvent.selection);
-        onSelectionChange && onSelectionChange(event);
+        onSelectionChange === null || onSelectionChange === void 0 ? void 0 : onSelectionChange(event);
     };
-    /**
-     * Callback that trigger on TextInput text change
-     *
-     * @param changedText
-     */
     const onChangeInput = (changedText) => {
-        onChange(utils_1.generateValueFromPartsAndChangedText(parts, plainText, changedText));
+        onChange((0, utils_1.generateValueFromPartsAndChangedText)(parts, plainText, changedText));
     };
-    /**
-     * We memoize the keyword to know should we show mention suggestions or not
-     */
-    const keywordByTrigger = react_1.useMemo(() => {
-        return utils_1.getMentionPartSuggestionKeywords(parts, plainText, selection, partTypes);
+    const keywordByTrigger = (0, react_1.useMemo)(() => {
+        return (0, utils_1.getMentionPartSuggestionKeywords)(parts, plainText, selection, partTypes);
     }, [parts, plainText, selection, partTypes]);
-    /**
-     * Callback on mention suggestion press. We should:
-     * - Get updated value
-     * - Trigger onChange callback with new value
-     */
     const onSuggestionPress = (mentionType, isSuggestion = true) => (suggestion) => {
-        const newValue = utils_1.generateValueWithAddedSuggestion(parts, mentionType, plainText, selection, suggestion, isSuggestion);
-        if (!newValue) {
+        const currentCursorPosition = selection.start;
+        console.log("Current cursor position:", JSON.stringify(selection), `- ${suggestion.title}`);
+        console.log("parts:", parts);
+        console.log("plainText:", plainText);
+        console.log("keywordByTrigger:", keywordByTrigger);
+        console.log("mentionType:", mentionType);
+        console.log("isSuggestion:", isSuggestion);
+        console.log("suggestion:", suggestion);
+        const newValue = (0, utils_1.generateValueWithAddedSuggestion)(parts, mentionType, plainText, selection, suggestion, isSuggestion);
+        if (!newValue)
             return;
-        }
         onChange(newValue);
-        /**
-         * Move cursor to the end of just added mention starting from trigger string and including:
-         * - Length of trigger string
-         * - Length of mention title
-         * - Length of space after mention (1)
-         *
-         * Not working now due to the RN bug
-         */
-        // const newCursorPosition = currentPart.position.start + triggerPartIndex + trigger.length +
-        // suggestion.title.length + 1;
-        // textInput.current?.setNativeProps({selection: {start: newCursorPosition, end: newCursorPosition}});
+        console.log("New value:", newValue);
+        let nextCursor = 1;
+        if (!isSuggestion)
+            nextCursor += currentCursorPosition + suggestion.title.length + 1;
+        else {
+            nextCursor +=
+                currentCursorPosition +
+                    suggestion.title.length -
+                    (keywordByTrigger && keywordByTrigger["#"]
+                        ? keywordByTrigger["#"].length
+                        : 0);
+        }
+        console.log("3- Next cursor position:", nextCursor);
+        setTimeout(() => {
+            setSelection({ start: nextCursor, end: nextCursor });
+        }, 1000);
     };
     const handleTextInputRef = (ref) => {
         textInput.current = ref;
         if (propInputRef) {
-            if (typeof propInputRef === 'function') {
+            if (typeof propInputRef === "function") {
                 propInputRef(ref);
             }
             else {
-                propInputRef.current =
-                    ref;
+                propInputRef.current = ref;
             }
         }
     };
@@ -97,13 +99,13 @@ const MentionInput = (_a) => {
             onSuggestionPress: onSuggestionPress(partTypes[0], false),
         }),
         react_1.default.createElement(react_native_1.View, { style: containerStyle },
-            react_1.default.createElement(react_native_1.TextInput, Object.assign({ multiline: true }, textInputProps, { ref: handleTextInputRef, onChangeText: onChangeInput, onSelectionChange: handleSelectionChange }),
+            react_1.default.createElement(react_native_1.TextInput, Object.assign({ multiline: true }, textInputProps, { ref: handleTextInputRef, onChangeText: onChangeInput, onSelectionChange: handleSelectionChange, selection: selection }),
                 react_1.default.createElement(react_native_1.Text, null, parts.map(({ text, partType, data }, index) => {
                     var _a, _b;
-                    return partType ? (react_1.default.createElement(react_native_1.Text, { key: `${index}-${(_a = data === null || data === void 0 ? void 0 : data.trigger) !== null && _a !== void 0 ? _a : 'pattern'}`, style: (_b = partType.textStyle) !== null && _b !== void 0 ? _b : utils_1.defaultMentionTextStyle }, text)) : (react_1.default.createElement(react_native_1.Text, { key: index }, text));
+                    return partType ? (react_1.default.createElement(react_native_1.Text, { key: `${index}-${(_a = data === null || data === void 0 ? void 0 : data.trigger) !== null && _a !== void 0 ? _a : "pattern"}`, style: (_b = partType.textStyle) !== null && _b !== void 0 ? _b : utils_1.defaultMentionTextStyle }, text)) : (react_1.default.createElement(react_native_1.Text, { key: index }, text));
                 }))),
             renderListSuggestions({
-                keyword: keywordByTrigger['#'],
+                keyword: keywordByTrigger["#"],
                 onSuggestionPress: onSuggestionPress(partTypes[0]),
             }))));
 };

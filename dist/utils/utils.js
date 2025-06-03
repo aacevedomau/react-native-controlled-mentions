@@ -20,8 +20,8 @@ const string_prototype_matchall_1 = __importDefault(require("string.prototype.ma
 const mentionRegEx = /((.)\[#([^[]*)]\(([^(^)]*)\))/gi;
 exports.mentionRegEx = mentionRegEx;
 const defaultMentionTextStyle = {
-    fontWeight: 'bold',
-    color: 'blue',
+    fontWeight: "bold",
+    color: "green",
 };
 exports.defaultMentionTextStyle = defaultMentionTextStyle;
 const defaultPlainStringGenerator = ({ trigger }, { title }) => `${trigger}${title}`;
@@ -30,7 +30,7 @@ const isMentionPartType = (partType) => {
 };
 exports.isMentionPartType = isMentionPartType;
 const getPartIndexByCursor = (parts, cursor, isIncludeEnd) => {
-    return parts.findIndex(one => cursor >= one.position.start && isIncludeEnd
+    return parts.findIndex((one) => cursor >= one.position.start && isIncludeEnd
         ? cursor <= one.position.end
         : cursor < one.position.end);
 };
@@ -110,7 +110,7 @@ const getMentionPartSuggestionKeywords = (parts, plainText, selection, partTypes
             return;
         }
         // Find the part with the cursor
-        const part = parts.find(one => selection.end > one.position.start &&
+        const part = parts.find((one) => selection.end > one.position.start &&
             selection.end <= one.position.end);
         // Check if the cursor is not in mention type part
         if (part == null || part.data != null) {
@@ -131,11 +131,11 @@ const getMentionPartSuggestionKeywords = (parts, plainText, selection, partTypes
         let spacesCount = 0;
         for (let cursor = selection.end - 1; cursor >= triggerIndex; cursor -= 1) {
             // Mention cannot have new line
-            if (plainText[cursor] === '\n') {
+            if (plainText[cursor] === "\n") {
                 return;
             }
             // Incrementing space counter if the next symbol is space
-            if (plainText[cursor] === ' ') {
+            if (plainText[cursor] === " ") {
                 spacesCount += 1;
                 // Check maximum allowed spaces in trigger word
                 if (spacesCount > allowedSpacesCount) {
@@ -156,10 +156,10 @@ exports.getMentionPartSuggestionKeywords = getMentionPartSuggestionKeywords;
  * @param changedText changed plain text
  */
 const generateValueFromPartsAndChangedText = (parts, originalText, changedText) => {
-    const changes = diff_1.diffChars(originalText, changedText);
+    const changes = (0, diff_1.diffChars)(originalText, changedText);
     let newParts = [];
     let cursor = 0;
-    changes.forEach(change => {
+    changes.forEach((change) => {
         switch (true) {
             /**
              * We should:
@@ -210,9 +210,10 @@ exports.generateValueFromPartsAndChangedText = generateValueFromPartsAndChangedT
  * @param suggestion - suggestion that should be added
  */
 const generateValueWithAddedSuggestion = (parts, mentionType, plainText, selection, suggestion, isSuggestion) => {
-    var _a;
-    const currentPartIndex = parts.findIndex(one => selection.end >= one.position.start && selection.end <= one.position.end);
+    console.log("🚀 generateValueWithAddedSuggestion", `\n\nparts: ${JSON.stringify(parts)}`);
+    const currentPartIndex = parts.findIndex((one) => selection.end >= one.position.start && selection.end <= one.position.end);
     const currentPart = parts[currentPartIndex];
+    console.log("🚀 currentPartIndex:", currentPartIndex, `\ncurrentPart: ${JSON.stringify(currentPart)}`);
     if (!currentPart) {
         return;
     }
@@ -223,16 +224,14 @@ const generateValueWithAddedSuggestion = (parts, mentionType, plainText, selecti
             : selection.start - currentPart.position.start,
         end: selection.end - currentPart.position.start,
     };
-    const isInsertSpaceToNextPart = mentionType.isInsertSpaceAfterMention &&
-        // Cursor is at the very end of parts or text row
-        (plainText.length === selection.end || ((_a = parts[currentPartIndex]) === null || _a === void 0 ? void 0 : _a.text.startsWith('\n', newMentionPartPosition.end)));
+    const isInsertSpaceToNextPart = mentionType.isInsertSpaceAfterMention;
     return getValueFromParts([
         ...parts.slice(0, currentPartIndex),
         // Create part with string before mention
         generatePlainTextPart(currentPart.text.substring(0, newMentionPartPosition.start)),
         generateMentionPart(mentionType, Object.assign({ original: getMentionValue(mentionType.trigger, suggestion), trigger: mentionType.trigger }, suggestion)),
         // Create part with rest of string after mention and add a space if needed
-        generatePlainTextPart(`${isInsertSpaceToNextPart ? ' ' : ''}${currentPart.text.substring(newMentionPartPosition.end)}`),
+        generatePlainTextPart(`${isInsertSpaceToNextPart ? " " : ""}${currentPart.text.substring(newMentionPartPosition.end)}`),
         ...parts.slice(currentPartIndex + 1),
     ]);
 };
@@ -311,9 +310,9 @@ const getMentionDataFromRegExMatchResult = ([, original, trigger, title, id,]) =
  */
 const parseValue = (value, partTypes, positionOffset = 0) => {
     if (value == null) {
-        value = '';
+        value = "";
     }
-    let plainText = '';
+    let plainText = "";
     let parts = [];
     // We don't have any part types so adding just plain text part
     if (partTypes.length === 0) {
@@ -323,7 +322,7 @@ const parseValue = (value, partTypes, positionOffset = 0) => {
     else {
         const [partType, ...restPartTypes] = partTypes;
         const regex = isMentionPartType(partType) ? mentionRegEx : partType.pattern;
-        const matches = Array.from(string_prototype_matchall_1.default(value !== null && value !== void 0 ? value : '', regex));
+        const matches = Array.from((0, string_prototype_matchall_1.default)(value !== null && value !== void 0 ? value : "", regex));
         // In case when we didn't get any matches continue parsing value with rest part types
         if (matches.length === 0) {
             return parseValue(value, restPartTypes, positionOffset);
@@ -383,7 +382,7 @@ exports.parseValue = parseValue;
  *
  * @param parts
  */
-const getValueFromParts = (parts) => parts.map(item => (item.data ? item.data.original : item.text)).join('');
+const getValueFromParts = (parts) => parts.map((item) => (item.data ? item.data.original : item.text)).join("");
 exports.getValueFromParts = getValueFromParts;
 /**
  * Replace all mention values in value to some specified format
