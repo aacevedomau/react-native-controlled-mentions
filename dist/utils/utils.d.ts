@@ -1,12 +1,13 @@
 import { StyleProp, TextStyle } from "react-native";
 import { MentionData, MentionPartType, Part, PartType, Position, Suggestion } from "../types";
 /**
- * RegEx grouped results. Example - "@[Full Name](123abc)"
- * We have 4 groups here:
- * - The whole original string - "@[Full Name](123abc)"
- * - Mention trigger - "@"
- * - Name - "Full Name"
- * - Id - "123abc"
+ * RegEx grouped results. Example - "@[@Full Name](123abc)" or "#[#hashtag](456def)"
+ * We have 5 groups here:
+ * - The whole original string - "@[@Full Name](123abc)" or "#[#hashtag](456def)"
+ * - Mention trigger - "@" or "#"
+ * - Inner trigger - "@" or "#" (should match the outer trigger)
+ * - Name - "Full Name" or "hashtag" (without trigger)
+ * - Id - "123abc" or "456def"
  */
 declare const mentionRegEx: RegExp;
 declare const defaultMentionTextStyle: StyleProp<TextStyle>;

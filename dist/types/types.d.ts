@@ -19,7 +19,8 @@ type RegexMatchResult = string[] & {
     1: string;
     2: string;
     3: string;
-    4: number;
+    4: string;
+    5: string;
     index: number;
     groups: MentionData;
 };
@@ -30,6 +31,7 @@ type Position = {
 type MentionSuggestionsProps = {
     keyword: string | undefined;
     onSuggestionPress: (suggestion: Suggestion) => void;
+    trigger?: string;
 };
 type MentionPartType = {
     trigger: string;

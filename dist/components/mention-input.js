@@ -53,6 +53,16 @@ const MentionInput = (_a) => {
     const keywordByTrigger = (0, react_1.useMemo)(() => {
         return (0, utils_1.getMentionPartSuggestionKeywords)(parts, plainText, selection, partTypes);
     }, [parts, plainText, selection, partTypes]);
+    // Find the active trigger based on current keywords
+    const activeTrigger = (0, react_1.useMemo)(() => {
+        const mentionPartTypes = partTypes.filter((partType) => partType.trigger != null);
+        for (const partType of mentionPartTypes) {
+            if ((keywordByTrigger === null || keywordByTrigger === void 0 ? void 0 : keywordByTrigger[partType.trigger]) !== undefined) {
+                return partType;
+            }
+        }
+        return mentionPartTypes[0] || null;
+    }, [keywordByTrigger, partTypes]);
     const onSuggestionPress = (mentionType, isSuggestion = true) => (suggestion) => {
         const currentCursorPosition = selection.start;
         console.log("Current cursor position:", JSON.stringify(selection), `- ${suggestion.title}`);
@@ -71,12 +81,12 @@ const MentionInput = (_a) => {
         if (!isSuggestion)
             nextCursor += currentCursorPosition + suggestion.title.length + 1;
         else {
+            const triggerKeyword = keywordByTrigger === null || keywordByTrigger === void 0 ? void 0 : keywordByTrigger[mentionType.trigger];
+            const triggerKeywordLength = triggerKeyword ? triggerKeyword.length : 0;
             nextCursor +=
                 currentCursorPosition +
                     suggestion.title.length -
-                    (keywordByTrigger && keywordByTrigger["#"]
-                        ? keywordByTrigger["#"].length
-                        : 0);
+                    triggerKeywordLength;
         }
         console.log("3- Next cursor position:", nextCursor);
         setTimeout(() => {
@@ -96,7 +106,7 @@ const MentionInput = (_a) => {
     };
     return (react_1.default.createElement(react_1.default.Fragment, null, renderListSelection === null || renderListSelection === void 0 ? void 0 :
         renderListSelection({
-            onSuggestionPress: onSuggestionPress(partTypes[0], false),
+            onSuggestionPress: onSuggestionPress(activeTrigger || partTypes[0], false),
         }),
         react_1.default.createElement(react_native_1.View, { style: containerStyle },
             react_1.default.createElement(react_native_1.TextInput, Object.assign({ multiline: true }, textInputProps, { ref: handleTextInputRef, onChangeText: onChangeInput, onSelectionChange: handleSelectionChange, selection: selection }),
@@ -104,10 +114,12 @@ const MentionInput = (_a) => {
                     var _a, _b;
                     return partType ? (react_1.default.createElement(react_native_1.Text, { key: `${index}-${(_a = data === null || data === void 0 ? void 0 : data.trigger) !== null && _a !== void 0 ? _a : "pattern"}`, style: (_b = partType.textStyle) !== null && _b !== void 0 ? _b : utils_1.defaultMentionTextStyle }, text)) : (react_1.default.createElement(react_native_1.Text, { key: index }, text));
                 }))),
-            renderListSuggestions({
-                keyword: keywordByTrigger["#"],
-                onSuggestionPress: onSuggestionPress(partTypes[0]),
-            }))));
+            activeTrigger &&
+                renderListSuggestions({
+                    keyword: keywordByTrigger === null || keywordByTrigger === void 0 ? void 0 : keywordByTrigger[activeTrigger.trigger],
+                    onSuggestionPress: onSuggestionPress(activeTrigger),
+                    trigger: activeTrigger.trigger,
+                }))));
 };
 exports.MentionInput = MentionInput;
 //# sourceMappingURL=mention-input.js.map

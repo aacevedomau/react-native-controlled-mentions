@@ -57,6 +57,22 @@ const MentionInput = ({
     );
   }, [parts, plainText, selection, partTypes]);
 
+  // Find the active trigger based on current keywords
+  const activeTrigger = useMemo(() => {
+    const mentionPartTypes = partTypes.filter(
+      (partType): partType is MentionPartType =>
+        (partType as MentionPartType).trigger != null
+    );
+
+    for (const partType of mentionPartTypes) {
+      if (keywordByTrigger?.[partType.trigger] !== undefined) {
+        return partType;
+      }
+    }
+
+    return mentionPartTypes[0] || null;
+  }, [keywordByTrigger, partTypes]);
+
   const onSuggestionPress =
     (mentionType: MentionPartType, isSuggestion = true) =>
     (suggestion: Suggestion) => {
@@ -92,12 +108,12 @@ const MentionInput = ({
       if (!isSuggestion)
         nextCursor += currentCursorPosition + suggestion.title.length + 1;
       else {
+        const triggerKeyword = keywordByTrigger?.[mentionType.trigger];
+        const triggerKeywordLength = triggerKeyword ? triggerKeyword.length : 0;
         nextCursor +=
           currentCursorPosition +
           suggestion.title.length -
-          (keywordByTrigger && keywordByTrigger["#"]
-            ? keywordByTrigger["#"].length
-            : 0);
+          triggerKeywordLength;
       }
       console.log("3- Next cursor position:", nextCursor);
 
@@ -122,7 +138,7 @@ const MentionInput = ({
     <>
       {renderListSelection?.({
         onSuggestionPress: onSuggestionPress(
-          partTypes[0] as MentionPartType,
+          activeTrigger || (partTypes[0] as MentionPartType),
           false
         ),
       })}
@@ -151,10 +167,12 @@ const MentionInput = ({
           </Text>
         </TextInput>
 
-        {renderListSuggestions({
-          keyword: keywordByTrigger["#"],
-          onSuggestionPress: onSuggestionPress(partTypes[0] as MentionPartType),
-        })}
+        {activeTrigger &&
+          renderListSuggestions({
+            keyword: keywordByTrigger?.[activeTrigger.trigger],
+            onSuggestionPress: onSuggestionPress(activeTrigger),
+            trigger: activeTrigger.trigger,
+          })}
       </View>
     </>
   );

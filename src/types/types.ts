@@ -32,11 +32,14 @@ type RegexMatchResult = string[] & {
   // trigger
   2: string;
 
-  // title
+  // inner trigger (should match outer trigger)
   3: string;
 
+  // title
+  4: string;
+
   // id
-  4: number;
+  5: string;
 
   // Start position of matched text in whole string
   index: number;
@@ -54,6 +57,7 @@ type Position = {
 type MentionSuggestionsProps = {
   keyword: string | undefined;
   onSuggestionPress: (suggestion: Suggestion) => void;
+  trigger?: string; // Add the active trigger
 };
 
 type MentionPartType = {

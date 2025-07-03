@@ -22,7 +22,9 @@ const renderSuggestions: (
 ) => FC<MentionSuggestionsProps> =
   (suggestions) =>
   ({ keyword, onSuggestionPress }) => {
-    if (keyword == null) {
+    // Only hide suggestions if keyword is undefined (not actively typing a mention)
+    // Show suggestions if keyword is an empty string (just typed the trigger)
+    if (keyword === undefined) {
       return null;
     }
 
@@ -49,8 +51,72 @@ const renderMentionSuggestions = renderSuggestions(users);
 
 const renderHashtagSuggestions = renderSuggestions(hashtags);
 
+// Combined suggestions handler that shows different suggestions based on the active trigger
+const renderCombinedSuggestions: FC<MentionSuggestionsProps> = ({
+  keyword,
+  onSuggestionPress,
+  trigger,
+}) => {
+  // Only hide suggestions if keyword is undefined (not actively typing a mention)
+  // Show suggestions if keyword is an empty string (just typed the trigger)
+  if (keyword === undefined) {
+    return null;
+  }
+
+  // Show different suggestions based on the active trigger
+  if (trigger === "@") {
+    const filteredUsers = users.filter((one) =>
+      one.title.toLocaleLowerCase().includes(keyword.toLocaleLowerCase())
+    );
+
+    return (
+      <View>
+        <Text style={{ fontWeight: "bold", padding: 8, color: "blue" }}>
+          Users:
+        </Text>
+        {filteredUsers.map((one) => (
+          <Pressable
+            key={`user-${one.id}`}
+            onPress={() => onSuggestionPress(one)}
+            style={{ padding: 12, backgroundColor: "#e3f2fd", marginBottom: 2 }}
+          >
+            <Text>@{one.title}</Text>
+          </Pressable>
+        ))}
+      </View>
+    );
+  }
+
+  if (trigger === "#") {
+    const filteredHashtags = hashtags.filter((one) =>
+      one.title.toLocaleLowerCase().includes(keyword.toLocaleLowerCase())
+    );
+
+    return (
+      <View>
+        <Text style={{ fontWeight: "bold", padding: 8, color: "orange" }}>
+          Hashtags:
+        </Text>
+        {filteredHashtags.map((one) => (
+          <Pressable
+            key={`hashtag-${one.id}`}
+            onPress={() => onSuggestionPress(one)}
+            style={{ padding: 12, backgroundColor: "#fff3e0", marginBottom: 2 }}
+          >
+            <Text>#{one.title}</Text>
+          </Pressable>
+        ))}
+      </View>
+    );
+  }
+
+  return null;
+};
+
 const App = () => {
-  const [value, setValue] = useState("Hello @[Mary](2)! How are you?");
+  const [value, setValue] = useState(
+    "Hello @[Mary](2)! Check out #[todo](1) items."
+  );
 
   return (
     <SafeAreaView>
@@ -60,12 +126,11 @@ const App = () => {
         partTypes={[
           {
             trigger: "@",
-            renderSuggestions: renderMentionSuggestions,
+            textStyle: { fontWeight: "bold", color: "blue" },
           },
           {
             trigger: "#",
-            renderSuggestions: renderHashtagSuggestions,
-            textStyle: { fontWeight: "bold", color: "grey" },
+            textStyle: { fontWeight: "bold", color: "orange" },
           },
           {
             pattern:
@@ -73,8 +138,9 @@ const App = () => {
             textStyle: { color: "blue" },
           },
         ]}
-        placeholder="Type here..."
-        style={{ padding: 12 }}
+        renderListSuggestions={renderCombinedSuggestions}
+        placeholder="Type @ for users or # for hashtags..."
+        style={{ padding: 12, minHeight: 100 }}
       />
     </SafeAreaView>
   );

@@ -14,17 +14,17 @@ import {
 } from "../types";
 
 /**
- * RegEx grouped results. Example - "@[Full Name](123abc)"
- * We have 4 groups here:
- * - The whole original string - "@[Full Name](123abc)"
- * - Mention trigger - "@"
- * - Name - "Full Name"
- * - Id - "123abc"
+ * RegEx grouped results. Example - "@[@Full Name](123abc)" or "#[#hashtag](456def)"
+ * We have 5 groups here:
+ * - The whole original string - "@[@Full Name](123abc)" or "#[#hashtag](456def)"
+ * - Mention trigger - "@" or "#"
+ * - Inner trigger - "@" or "#" (should match the outer trigger)
+ * - Name - "Full Name" or "hashtag" (without trigger)
+ * - Id - "123abc" or "456def"
  */
-// const mentionRegEx = /((.)\[([^[]*)]\(([^(^)]*)\))/gi;
-
-// This new regex will match the following => #[#Airbnb](136)
-const mentionRegEx = /((.)\[#([^[]*)]\(([^(^)]*)\))/gi;
+// Updated regex to match patterns like: @[@Full Name](123) or #[#hashtag](456)
+// The \2 is a backreference to ensure the inner trigger matches the outer trigger
+const mentionRegEx = /((.)\[(\2)([^[]*)]\(([^(^)]*)\))/gi;
 
 const defaultMentionTextStyle: StyleProp<TextStyle> = {
   fontWeight: "bold",
@@ -439,13 +439,14 @@ const getMentionDataFromRegExMatchResult = ([
   ,
   original,
   trigger,
+  innerTrigger, // This should match the outer trigger
   title,
   id,
 ]: RegexMatchResult): MentionData => ({
   original,
   trigger,
-  title,
-  id,
+  title, // Now this is clean without the duplicate trigger
+  id: Number(id),
 });
 
 /**
@@ -582,13 +583,15 @@ const replaceMentionValues = (
   value: string,
   replacer: (mention: MentionData) => string
 ) =>
-  value.replace(mentionRegEx, (fullMatch, original, trigger, title, id) =>
-    replacer({
-      original,
-      trigger,
-      title,
-      id,
-    })
+  value.replace(
+    mentionRegEx,
+    (fullMatch, original, trigger, innerTrigger, title, id) =>
+      replacer({
+        original,
+        trigger,
+        title,
+        id: Number(id),
+      })
   );
 
 export {
