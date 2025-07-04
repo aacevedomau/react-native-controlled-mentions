@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replaceMentionValues = exports.getValueFromParts = exports.parseValue = exports.getMentionValue = exports.generateMentionPart = exports.generatePlainTextPart = exports.generateValueWithAddedSuggestion = exports.generateValueFromPartsAndChangedText = exports.getMentionPartSuggestionKeywords = exports.isMentionPartType = exports.defaultMentionTextStyle = exports.mentionRegEx = void 0;
+exports.autoCompleteMentions = exports.replaceMentionValues = exports.getValueFromParts = exports.parseValue = exports.getMentionValue = exports.generateMentionPart = exports.generatePlainTextPart = exports.generateValueWithAddedSuggestion = exports.generateValueFromPartsAndChangedText = exports.getMentionPartSuggestionKeywords = exports.isMentionPartType = exports.defaultMentionTextStyle = exports.mentionRegEx = void 0;
 const diff_1 = require("diff");
 // @ts-ignore the lib do not have TS declarations yet
 const string_prototype_matchall_1 = __importDefault(require("string.prototype.matchall"));
@@ -254,9 +254,9 @@ exports.generatePlainTextPart = generatePlainTextPart;
 /**
  * Method for generating part for mention
  *
- * @param mentionPartType
- * @param mention - mention data
- * @param positionOffset - position offset from the very beginning of text
+ * @param mentionPartType: MentionPartType
+ * @param mention: MentionData
+ * @param positionOffset: number
  */
 const generateMentionPart = (mentionPartType, mention, positionOffset = 0) => {
     const text = mentionPartType.getPlainString
@@ -399,4 +399,38 @@ const replaceMentionValues = (value, replacer) => value.replace(mentionRegEx, (f
     id: Number(id),
 }));
 exports.replaceMentionValues = replaceMentionValues;
+/**
+ * Auto-completes mentions that match exactly with available suggestions
+ *
+ * @param text The input text to process
+ * @param suggestions Available suggestions for the trigger
+ * @param trigger The trigger character (e.g., '@', '#')
+ * @returns Text with auto-completed mentions
+ */
+const autoCompleteMentions = (text, suggestions, trigger) => {
+    if (!suggestions || suggestions.length === 0) {
+        return text;
+    }
+    // Escape the trigger for regex
+    const escapedTrigger = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Regex that matches: trigger + word + (space or end of text)
+    // And that is NOT already formatted as a mention
+    const pattern = new RegExp(`${escapedTrigger}([a-zA-Z0-9_]+)(?=\\s|$)(?![\\]\\)])`, "g");
+    return text.replace(pattern, (match, word, offset) => {
+        // Verify it's not part of an already formatted mention
+        const beforeMatch = text.substring(0, text.indexOf(offset));
+        if (beforeMatch.endsWith("[") ||
+            match.includes("[") ||
+            match.includes("]")) {
+            return match;
+        }
+        // Look for exact match (case-insensitive)
+        const matchingSuggestion = suggestions.find((suggestion) => suggestion.title.toLowerCase() === word.toLowerCase());
+        if (matchingSuggestion) {
+            return `${trigger}[${trigger}${matchingSuggestion.title}](${matchingSuggestion.id})`;
+        }
+        return match;
+    });
+};
+exports.autoCompleteMentions = autoCompleteMentions;
 //# sourceMappingURL=utils.js.map

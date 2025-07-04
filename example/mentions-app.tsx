@@ -9,6 +9,9 @@ const users: Suggestion[] = [
   { id: 3, title: "Tony" },
   { id: 4, title: "Mike" },
   { id: 5, title: "Grey" },
+  { id: 6, title: "Lead" },
+  { id: 7, title: "Project" },
+  { id: 8, title: "Phone" },
 ];
 
 const hashtags = [
@@ -138,6 +141,10 @@ const App = () => {
             textStyle: { color: "blue" },
           },
         ]}
+        autoCompleteSuggestions={{
+          "@": users,
+          "#": hashtags,
+        }}
         renderListSuggestions={renderCombinedSuggestions}
         placeholder="Type @ for users or # for hashtags..."
         style={{ padding: 12, minHeight: 100 }}

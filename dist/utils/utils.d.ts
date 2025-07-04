@@ -66,9 +66,9 @@ declare const generatePlainTextPart: (text: string, positionOffset?: number) => 
 /**
  * Method for generating part for mention
  *
- * @param mentionPartType
- * @param mention - mention data
- * @param positionOffset - position offset from the very beginning of text
+ * @param mentionPartType: MentionPartType
+ * @param mention: MentionData
+ * @param positionOffset: number
  */
 declare const generateMentionPart: (mentionPartType: MentionPartType, mention: MentionData, positionOffset?: number) => Part;
 /**
@@ -102,4 +102,13 @@ declare const getValueFromParts: (parts: Part[]) => string;
  * @param replacer - function that takes mention object as parameter and returns string
  */
 declare const replaceMentionValues: (value: string, replacer: (mention: MentionData) => string) => string;
-export { mentionRegEx, defaultMentionTextStyle, isMentionPartType, getMentionPartSuggestionKeywords, generateValueFromPartsAndChangedText, generateValueWithAddedSuggestion, generatePlainTextPart, generateMentionPart, getMentionValue, parseValue, getValueFromParts, replaceMentionValues, };
+/**
+ * Auto-completes mentions that match exactly with available suggestions
+ *
+ * @param text The input text to process
+ * @param suggestions Available suggestions for the trigger
+ * @param trigger The trigger character (e.g., '@', '#')
+ * @returns Text with auto-completed mentions
+ */
+declare const autoCompleteMentions: (text: string, suggestions: Suggestion[], trigger: string) => string;
+export { mentionRegEx, defaultMentionTextStyle, isMentionPartType, getMentionPartSuggestionKeywords, generateValueFromPartsAndChangedText, generateValueWithAddedSuggestion, generatePlainTextPart, generateMentionPart, getMentionValue, parseValue, getValueFromParts, replaceMentionValues, autoCompleteMentions, };

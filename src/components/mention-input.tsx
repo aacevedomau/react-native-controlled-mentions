@@ -14,6 +14,7 @@ import {
   generateValueWithAddedSuggestion,
   getMentionPartSuggestionKeywords,
   parseValue,
+  autoCompleteMentions,
 } from "../utils";
 
 const MentionInput = ({
@@ -25,6 +26,7 @@ const MentionInput = ({
   onSelectionChange,
   renderListSuggestions,
   renderListSelection,
+  autoCompleteSuggestions = {},
   ...textInputProps
 }: MentionInputProps) => {
   const textInput = useRef<TextInput | null>(null);
@@ -43,9 +45,30 @@ const MentionInput = ({
   };
 
   const onChangeInput = (changedText: string) => {
-    onChange(
-      generateValueFromPartsAndChangedText(parts, plainText, changedText)
+    let processedText = generateValueFromPartsAndChangedText(
+      parts,
+      plainText,
+      changedText
     );
+
+    // Apply auto-completion for each trigger that has suggestions
+    const mentionPartTypes = partTypes.filter(
+      (partType): partType is MentionPartType =>
+        (partType as MentionPartType).trigger != null
+    );
+
+    mentionPartTypes.forEach((partType) => {
+      const suggestions = autoCompleteSuggestions[partType.trigger];
+      if (suggestions && suggestions.length > 0) {
+        processedText = autoCompleteMentions(
+          processedText,
+          suggestions,
+          partType.trigger
+        );
+      }
+    });
+
+    onChange(processedText);
   };
 
   const keywordByTrigger = useMemo(() => {

@@ -115,6 +115,9 @@ type MentionInputProps = Omit<TextInputProps, "onChange"> & {
   renderListSuggestions: FC<MentionSuggestionsProps>;
 
   renderListSelection?: FC<Pick<MentionSuggestionsProps, "onSuggestionPress">>;
+
+  // Auto-completion suggestions for each trigger
+  autoCompleteSuggestions?: { [trigger: string]: Suggestion[] };
 };
 
 export type {

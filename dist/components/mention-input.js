@@ -39,7 +39,7 @@ const react_1 = __importStar(require("react"));
 const react_native_1 = require("react-native");
 const utils_1 = require("../utils");
 const MentionInput = (_a) => {
-    var { value, onChange, partTypes = [], inputRef: propInputRef, containerStyle, onSelectionChange, renderListSuggestions, renderListSelection } = _a, textInputProps = __rest(_a, ["value", "onChange", "partTypes", "inputRef", "containerStyle", "onSelectionChange", "renderListSuggestions", "renderListSelection"]);
+    var { value, onChange, partTypes = [], inputRef: propInputRef, containerStyle, onSelectionChange, renderListSuggestions, renderListSelection, autoCompleteSuggestions = {} } = _a, textInputProps = __rest(_a, ["value", "onChange", "partTypes", "inputRef", "containerStyle", "onSelectionChange", "renderListSuggestions", "renderListSelection", "autoCompleteSuggestions"]);
     const textInput = (0, react_1.useRef)(null);
     const [selection, setSelection] = (0, react_1.useState)({ start: 0, end: 0 });
     const { plainText, parts } = (0, react_1.useMemo)(() => (0, utils_1.parseValue)(value, partTypes), [value, partTypes]);
@@ -48,7 +48,16 @@ const MentionInput = (_a) => {
         onSelectionChange === null || onSelectionChange === void 0 ? void 0 : onSelectionChange(event);
     };
     const onChangeInput = (changedText) => {
-        onChange((0, utils_1.generateValueFromPartsAndChangedText)(parts, plainText, changedText));
+        let processedText = (0, utils_1.generateValueFromPartsAndChangedText)(parts, plainText, changedText);
+        // Apply auto-completion for each trigger that has suggestions
+        const mentionPartTypes = partTypes.filter((partType) => partType.trigger != null);
+        mentionPartTypes.forEach((partType) => {
+            const suggestions = autoCompleteSuggestions[partType.trigger];
+            if (suggestions && suggestions.length > 0) {
+                processedText = (0, utils_1.autoCompleteMentions)(processedText, suggestions, partType.trigger);
+            }
+        });
+        onChange(processedText);
     };
     const keywordByTrigger = (0, react_1.useMemo)(() => {
         return (0, utils_1.getMentionPartSuggestionKeywords)(parts, plainText, selection, partTypes);

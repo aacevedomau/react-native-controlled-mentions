@@ -60,5 +60,8 @@ type MentionInputProps = Omit<TextInputProps, "onChange"> & {
     containerStyle?: StyleProp<ViewStyle>;
     renderListSuggestions: FC<MentionSuggestionsProps>;
     renderListSelection?: FC<Pick<MentionSuggestionsProps, "onSuggestionPress">>;
+    autoCompleteSuggestions?: {
+        [trigger: string]: Suggestion[];
+    };
 };
 export type { Suggestion, MentionData, CharactersDiffChange, RegexMatchResult, Position, Part, MentionSuggestionsProps, MentionPartType, PatternPartType, PartType, MentionInputProps, };

@@ -382,9 +382,9 @@ const generatePlainTextPart = (text: string, positionOffset = 0): Part => ({
 /**
  * Method for generating part for mention
  *
- * @param mentionPartType
- * @param mention - mention data
- * @param positionOffset - position offset from the very beginning of text
+ * @param mentionPartType: MentionPartType
+ * @param mention: MentionData
+ * @param positionOffset: number
  */
 const generateMentionPart = (
   mentionPartType: MentionPartType,
@@ -594,6 +594,57 @@ const replaceMentionValues = (
       })
   );
 
+/**
+ * Auto-completes mentions that match exactly with available suggestions
+ *
+ * @param text The input text to process
+ * @param suggestions Available suggestions for the trigger
+ * @param trigger The trigger character (e.g., '@', '#')
+ * @returns Text with auto-completed mentions
+ */
+const autoCompleteMentions = (
+  text: string,
+  suggestions: Suggestion[],
+  trigger: string
+): string => {
+  if (!suggestions || suggestions.length === 0) {
+    return text;
+  }
+
+  // Escape the trigger for regex
+  const escapedTrigger = trigger.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  // Regex that matches: trigger + word + (space or end of text)
+  // And that is NOT already formatted as a mention
+  const pattern = new RegExp(
+    `${escapedTrigger}([a-zA-Z0-9_]+)(?=\\s|$)(?![\\]\\)])`,
+    "g"
+  );
+
+  return text.replace(pattern, (match, word, offset) => {
+    // Verify it's not part of an already formatted mention
+    const beforeMatch = text.substring(0, text.indexOf(offset));
+    if (
+      beforeMatch.endsWith("[") ||
+      match.includes("[") ||
+      match.includes("]")
+    ) {
+      return match;
+    }
+
+    // Look for exact match (case-insensitive)
+    const matchingSuggestion = suggestions.find(
+      (suggestion) => suggestion.title.toLowerCase() === word.toLowerCase()
+    );
+
+    if (matchingSuggestion) {
+      return `${trigger}[${trigger}${matchingSuggestion.title}](${matchingSuggestion.id})`;
+    }
+
+    return match;
+  });
+};
+
 export {
   mentionRegEx,
   defaultMentionTextStyle,
@@ -607,4 +658,5 @@ export {
   parseValue,
   getValueFromParts,
   replaceMentionValues,
+  autoCompleteMentions,
 };
