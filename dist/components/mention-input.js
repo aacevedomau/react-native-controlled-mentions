@@ -43,6 +43,14 @@ const MentionInput = (_a) => {
     const textInput = (0, react_1.useRef)(null);
     const [selection, setSelection] = (0, react_1.useState)({ start: 0, end: 0 });
     const { plainText, parts } = (0, react_1.useMemo)(() => (0, utils_1.parseValue)(value, partTypes), [value, partTypes]);
+    (0, react_1.useEffect)(() => {
+        if (plainText.length === 0) {
+            console.log("Reset cursor to start");
+            requestAnimationFrame(() => {
+                setSelection({ start: 0, end: 0 });
+            });
+        }
+    }, [plainText]);
     const handleSelectionChange = (event) => {
         setSelection(event.nativeEvent.selection);
         onSelectionChange === null || onSelectionChange === void 0 ? void 0 : onSelectionChange(event);

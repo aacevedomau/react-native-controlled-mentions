@@ -1,4 +1,10 @@
-import React, { MutableRefObject, useMemo, useRef, useState } from "react";
+import React, {
+  MutableRefObject,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   NativeSyntheticEvent,
   Text,
@@ -36,6 +42,15 @@ const MentionInput = ({
     () => parseValue(value, partTypes),
     [value, partTypes]
   );
+
+  useEffect(() => {
+    if (plainText.length === 0) {
+      console.log("Reset cursor to start");
+      requestAnimationFrame(() => {
+        setSelection({ start: 0, end: 0 });
+      });
+    }
+  }, [plainText]);
 
   const handleSelectionChange = (
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>
