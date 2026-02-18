@@ -1,6 +1,6 @@
 {
   "name": "react-native-controlled-mentions",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Implement @ triggered mentions in React Native TextInput with controlled state management.",
   "keywords": [
     "react",

@@ -5,10 +5,12 @@ import React, {
   useRef,
   useState,
 } from "react";
+import type { ComponentType, RefAttributes } from "react";
 import {
   NativeSyntheticEvent,
   Text,
   TextInput,
+  TextInputProps,
   TextInputSelectionChangeEventData,
   View,
 } from "react-native";
@@ -23,7 +25,10 @@ import {
   autoCompleteMentions,
 } from "../utils";
 
-const MentionInput = ({
+const MentionInput = <
+  TInputProps extends TextInputProps = TextInputProps,
+  TInputRef = TextInput,
+>({
   value,
   onChange,
   partTypes = [],
@@ -33,14 +38,19 @@ const MentionInput = ({
   renderListSuggestions,
   renderListSelection,
   autoCompleteSuggestions = {},
+  textInputComponent,
   ...textInputProps
-}: MentionInputProps) => {
-  const textInput = useRef<TextInput | null>(null);
+}: MentionInputProps<TInputProps, TInputRef>) => {
+  const textInput = useRef<TInputRef | null>(null);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
+
+  const InputComponent = (textInputComponent || TextInput) as ComponentType<
+    TInputProps & RefAttributes<TInputRef>
+  >;
 
   const { plainText, parts } = useMemo(
     () => parseValue(value, partTypes),
-    [value, partTypes]
+    [value, partTypes],
   );
 
   useEffect(() => {
@@ -53,7 +63,7 @@ const MentionInput = ({
   }, [plainText]);
 
   const handleSelectionChange = (
-    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>
+    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
   ) => {
     setSelection(event.nativeEvent.selection);
     onSelectionChange?.(event);
@@ -63,13 +73,13 @@ const MentionInput = ({
     let processedText = generateValueFromPartsAndChangedText(
       parts,
       plainText,
-      changedText
+      changedText,
     );
 
     // Apply auto-completion for each trigger that has suggestions
     const mentionPartTypes = partTypes.filter(
       (partType): partType is MentionPartType =>
-        (partType as MentionPartType).trigger != null
+        (partType as MentionPartType).trigger != null,
     );
 
     mentionPartTypes.forEach((partType) => {
@@ -78,7 +88,7 @@ const MentionInput = ({
         processedText = autoCompleteMentions(
           processedText,
           suggestions,
-          partType.trigger
+          partType.trigger,
         );
       }
     });
@@ -91,7 +101,7 @@ const MentionInput = ({
       parts,
       plainText,
       selection,
-      partTypes
+      partTypes,
     );
   }, [parts, plainText, selection, partTypes]);
 
@@ -99,7 +109,7 @@ const MentionInput = ({
   const activeTrigger = useMemo(() => {
     const mentionPartTypes = partTypes.filter(
       (partType): partType is MentionPartType =>
-        (partType as MentionPartType).trigger != null
+        (partType as MentionPartType).trigger != null,
     );
 
     for (const partType of mentionPartTypes) {
@@ -118,7 +128,7 @@ const MentionInput = ({
       console.log(
         "Current cursor position:",
         JSON.stringify(selection),
-        `- ${suggestion.title}`
+        `- ${suggestion.title}`,
       );
       console.log("parts:", parts);
       console.log("plainText:", plainText);
@@ -133,7 +143,7 @@ const MentionInput = ({
         plainText,
         selection,
         suggestion,
-        isSuggestion
+        isSuggestion,
       );
 
       if (!newValue) return;
@@ -160,14 +170,14 @@ const MentionInput = ({
       }, 1000);
     };
 
-  const handleTextInputRef = (ref: TextInput) => {
+  const handleTextInputRef = (ref: TInputRef) => {
     textInput.current = ref;
 
     if (propInputRef) {
       if (typeof propInputRef === "function") {
         propInputRef(ref);
       } else {
-        (propInputRef as MutableRefObject<TextInput>).current = ref;
+        (propInputRef as MutableRefObject<TInputRef>).current = ref;
       }
     }
   };
@@ -177,13 +187,13 @@ const MentionInput = ({
       {renderListSelection?.({
         onSuggestionPress: onSuggestionPress(
           activeTrigger || (partTypes[0] as MentionPartType),
-          false
+          false,
         ),
       })}
       <View style={containerStyle}>
-        <TextInput
+        <InputComponent
           multiline
-          {...textInputProps}
+          {...(textInputProps as unknown as TInputProps)}
           ref={handleTextInputRef}
           onChangeText={onChangeInput}
           onSelectionChange={handleSelectionChange}
@@ -200,10 +210,10 @@ const MentionInput = ({
                 </Text>
               ) : (
                 <Text key={index}>{text}</Text>
-              )
+              ),
             )}
           </Text>
-        </TextInput>
+        </InputComponent>
 
         {activeTrigger &&
           renderListSuggestions({

@@ -50,6 +50,29 @@ Replace your [TextInput](https://reactnative.dev/docs/textinput) by [MentionInpu
 />
 ```
 
+If you need a custom `TextInput` implementation (e.g. from another library), provide it via `textInputComponent`:
+
+```tsx
+import { TextInput } from "react-native";
+
+const MyTextInput = React.forwardRef<TextInput, TextInputProps>(
+  (props, ref) => <TextInput ref={ref} {...props} />,
+);
+
+<MentionInput
+  value={value}
+  onChange={setValue}
+  textInputComponent={MyTextInput}
+  partTypes={[
+    {
+      trigger: "@",
+      renderSuggestions,
+      textStyle: { fontWeight: "bold", color: "blue" },
+    },
+  ]}
+/>;
+```
+
 Define your `renderSuggestions` functional component that receive [MentionSuggestionsProps](#mentionsuggestionsprops-type-props):
 
 ```tsx
@@ -73,7 +96,7 @@ const renderSuggestions: FC<MentionSuggestionsProps> = ({
     <View>
       {suggestions
         .filter((one) =>
-          one.title.toLocaleLowerCase().includes(keyword.toLocaleLowerCase())
+          one.title.toLocaleLowerCase().includes(keyword.toLocaleLowerCase()),
         )
         .map((one) => (
           <Pressable

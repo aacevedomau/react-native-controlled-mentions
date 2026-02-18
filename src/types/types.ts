@@ -1,5 +1,5 @@
 import type { Change } from "diff";
-import type { FC, Ref } from "react";
+import type { ComponentType, FC, Ref, RefAttributes } from "react";
 import type {
   StyleProp,
   TextInput,
@@ -102,15 +102,20 @@ type Part = {
   cursorPosition?: number;
 };
 
-type MentionInputProps = Omit<TextInputProps, "onChange"> & {
+type MentionInputProps<
+  TInputProps extends TextInputProps = TextInputProps,
+  TInputRef = TextInput,
+> = Omit<TInputProps, "onChange"> & {
   value: string;
   onChange: (value: string) => any;
 
   partTypes?: PartType[];
 
-  inputRef?: Ref<TextInput>;
+  inputRef?: Ref<TInputRef>;
 
   containerStyle?: StyleProp<ViewStyle>;
+
+  textInputComponent?: ComponentType<TInputProps & RefAttributes<TInputRef>>;
 
   renderListSuggestions: FC<MentionSuggestionsProps>;
 

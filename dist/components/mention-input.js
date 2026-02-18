@@ -39,9 +39,10 @@ const react_1 = __importStar(require("react"));
 const react_native_1 = require("react-native");
 const utils_1 = require("../utils");
 const MentionInput = (_a) => {
-    var { value, onChange, partTypes = [], inputRef: propInputRef, containerStyle, onSelectionChange, renderListSuggestions, renderListSelection, autoCompleteSuggestions = {} } = _a, textInputProps = __rest(_a, ["value", "onChange", "partTypes", "inputRef", "containerStyle", "onSelectionChange", "renderListSuggestions", "renderListSelection", "autoCompleteSuggestions"]);
+    var { value, onChange, partTypes = [], inputRef: propInputRef, containerStyle, onSelectionChange, renderListSuggestions, renderListSelection, autoCompleteSuggestions = {}, textInputComponent } = _a, textInputProps = __rest(_a, ["value", "onChange", "partTypes", "inputRef", "containerStyle", "onSelectionChange", "renderListSuggestions", "renderListSelection", "autoCompleteSuggestions", "textInputComponent"]);
     const textInput = (0, react_1.useRef)(null);
     const [selection, setSelection] = (0, react_1.useState)({ start: 0, end: 0 });
+    const InputComponent = (textInputComponent || react_native_1.TextInput);
     const { plainText, parts } = (0, react_1.useMemo)(() => (0, utils_1.parseValue)(value, partTypes), [value, partTypes]);
     (0, react_1.useEffect)(() => {
         if (plainText.length === 0) {
@@ -126,7 +127,7 @@ const MentionInput = (_a) => {
             onSuggestionPress: onSuggestionPress(activeTrigger || partTypes[0], false),
         }),
         react_1.default.createElement(react_native_1.View, { style: containerStyle },
-            react_1.default.createElement(react_native_1.TextInput, Object.assign({ multiline: true }, textInputProps, { ref: handleTextInputRef, onChangeText: onChangeInput, onSelectionChange: handleSelectionChange, selection: selection }),
+            react_1.default.createElement(InputComponent, Object.assign({ multiline: true }, textInputProps, { ref: handleTextInputRef, onChangeText: onChangeInput, onSelectionChange: handleSelectionChange, selection: selection }),
                 react_1.default.createElement(react_native_1.Text, null, parts.map(({ text, partType, data }, index) => {
                     var _a, _b;
                     return partType ? (react_1.default.createElement(react_native_1.Text, { key: `${index}-${(_a = data === null || data === void 0 ? void 0 : data.trigger) !== null && _a !== void 0 ? _a : "pattern"}`, style: (_b = partType.textStyle) !== null && _b !== void 0 ? _b : utils_1.defaultMentionTextStyle }, text)) : (react_1.default.createElement(react_native_1.Text, { key: index }, text));
