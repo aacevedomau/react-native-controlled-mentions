@@ -64,5 +64,10 @@ type MentionInputProps<TInputProps extends TextInputProps = TextInputProps, TInp
     autoCompleteSuggestions?: {
         [trigger: string]: Suggestion[];
     };
+    processChangedText?: (changedText: string, context: {
+        plainText: string;
+        parts: Part[];
+        selection: Position;
+    }) => string;
 };
 export type { Suggestion, MentionData, CharactersDiffChange, RegexMatchResult, Position, Part, MentionSuggestionsProps, MentionPartType, PatternPartType, PartType, MentionInputProps, };

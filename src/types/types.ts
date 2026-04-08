@@ -123,6 +123,15 @@ type MentionInputProps<
 
   // Auto-completion suggestions for each trigger
   autoCompleteSuggestions?: { [trigger: string]: Suggestion[] };
+
+  processChangedText?: (
+    changedText: string,
+    context: {
+      plainText: string;
+      parts: Part[];
+      selection: Position;
+    },
+  ) => string;
 };
 
 export type {

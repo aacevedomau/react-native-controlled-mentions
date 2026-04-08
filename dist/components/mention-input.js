@@ -39,25 +39,29 @@ const react_1 = __importStar(require("react"));
 const react_native_1 = require("react-native");
 const utils_1 = require("../utils");
 const MentionInput = (_a) => {
-    var { value, onChange, partTypes = [], inputRef: propInputRef, containerStyle, onSelectionChange, renderListSuggestions, renderListSelection, autoCompleteSuggestions = {}, textInputComponent } = _a, textInputProps = __rest(_a, ["value", "onChange", "partTypes", "inputRef", "containerStyle", "onSelectionChange", "renderListSuggestions", "renderListSelection", "autoCompleteSuggestions", "textInputComponent"]);
+    var { value, onChange, partTypes = [], inputRef: propInputRef, containerStyle, onSelectionChange, renderListSuggestions, renderListSelection, autoCompleteSuggestions = {}, processChangedText, textInputComponent } = _a, textInputProps = __rest(_a, ["value", "onChange", "partTypes", "inputRef", "containerStyle", "onSelectionChange", "renderListSuggestions", "renderListSelection", "autoCompleteSuggestions", "processChangedText", "textInputComponent"]);
     const textInput = (0, react_1.useRef)(null);
     const [selection, setSelection] = (0, react_1.useState)({ start: 0, end: 0 });
     const InputComponent = (textInputComponent || react_native_1.TextInput);
     const { plainText, parts } = (0, react_1.useMemo)(() => (0, utils_1.parseValue)(value, partTypes), [value, partTypes]);
     (0, react_1.useEffect)(() => {
-        if (plainText.length === 0) {
+        if (plainText.length === 0 &&
+            (selection.start !== 0 || selection.end !== 0)) {
             console.log("Reset cursor to start");
             requestAnimationFrame(() => {
                 setSelection({ start: 0, end: 0 });
             });
         }
-    }, [plainText]);
+    }, [plainText, selection.end, selection.start]);
     const handleSelectionChange = (event) => {
         setSelection(event.nativeEvent.selection);
         onSelectionChange === null || onSelectionChange === void 0 ? void 0 : onSelectionChange(event);
     };
     const onChangeInput = (changedText) => {
-        let processedText = (0, utils_1.generateValueFromPartsAndChangedText)(parts, plainText, changedText);
+        const nextChangedText = processChangedText
+            ? processChangedText(changedText, { plainText, parts, selection })
+            : changedText;
+        let processedText = (0, utils_1.generateValueFromPartsAndChangedText)(parts, plainText, nextChangedText);
         // Apply auto-completion for each trigger that has suggestions
         const mentionPartTypes = partTypes.filter((partType) => partType.trigger != null);
         mentionPartTypes.forEach((partType) => {

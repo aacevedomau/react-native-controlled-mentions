@@ -1,7 +1,7 @@
 {
   "name": "react-native-controlled-mentions",
-  "version": "2.5.1",
-  "description": "Implement @ triggered mentions in React Native TextInput with controlled state management.",
+  "version": "2.6.1",
+  "description": "React Native mentions component with PDF URL detection to prevent adding PDF links to input",
   "keywords": [
     "react",
     "react-native",

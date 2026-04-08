@@ -38,6 +38,7 @@ const MentionInput = <
   renderListSuggestions,
   renderListSelection,
   autoCompleteSuggestions = {},
+  processChangedText,
   textInputComponent,
   ...textInputProps
 }: MentionInputProps<TInputProps, TInputRef>) => {
@@ -54,13 +55,16 @@ const MentionInput = <
   );
 
   useEffect(() => {
-    if (plainText.length === 0) {
+    if (
+      plainText.length === 0 &&
+      (selection.start !== 0 || selection.end !== 0)
+    ) {
       console.log("Reset cursor to start");
       requestAnimationFrame(() => {
         setSelection({ start: 0, end: 0 });
       });
     }
-  }, [plainText]);
+  }, [plainText, selection.end, selection.start]);
 
   const handleSelectionChange = (
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
@@ -70,10 +74,14 @@ const MentionInput = <
   };
 
   const onChangeInput = (changedText: string) => {
+    const nextChangedText = processChangedText
+      ? processChangedText(changedText, { plainText, parts, selection })
+      : changedText;
+
     let processedText = generateValueFromPartsAndChangedText(
       parts,
       plainText,
-      changedText,
+      nextChangedText,
     );
 
     // Apply auto-completion for each trigger that has suggestions
