@@ -44,6 +44,10 @@ const MentionInput = <
 }: MentionInputProps<TInputProps, TInputRef>) => {
   const textInput = useRef<TInputRef | null>(null);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const [controlledSelection, setControlledSelection] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
 
   const InputComponent = (textInputComponent || TextInput) as ComponentType<
     TInputProps & RefAttributes<TInputRef>
@@ -60,20 +64,34 @@ const MentionInput = <
       (selection.start !== 0 || selection.end !== 0)
     ) {
       console.log("Reset cursor to start");
-      requestAnimationFrame(() => {
-        setSelection({ start: 0, end: 0 });
-      });
+      setSelection({ start: 0, end: 0 });
     }
   }, [plainText, selection.end, selection.start]);
+
+  useEffect(() => {
+    if (
+      controlledSelection &&
+      controlledSelection.start === selection.start &&
+      controlledSelection.end === selection.end
+    ) {
+      setControlledSelection(null);
+    }
+  }, [controlledSelection, selection.end, selection.start]);
 
   const handleSelectionChange = (
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
   ) => {
-    setSelection(event.nativeEvent.selection);
+    const nextSelection = event.nativeEvent.selection;
+
+    setSelection(nextSelection);
     onSelectionChange?.(event);
   };
 
   const onChangeInput = (changedText: string) => {
+    if (controlledSelection) {
+      setControlledSelection(null);
+    }
+
     const nextChangedText = processChangedText
       ? processChangedText(changedText, { plainText, parts, selection })
       : changedText;
@@ -173,9 +191,12 @@ const MentionInput = <
       }
       console.log("3- Next cursor position:", nextCursor);
 
-      setTimeout(() => {
-        setSelection({ start: nextCursor, end: nextCursor });
-      }, 1000);
+      requestAnimationFrame(() => {
+        const nextSelection = { start: nextCursor, end: nextCursor };
+
+        setSelection(nextSelection);
+        setControlledSelection(nextSelection);
+      });
     };
 
   const handleTextInputRef = (ref: TInputRef) => {
@@ -205,7 +226,7 @@ const MentionInput = <
           ref={handleTextInputRef}
           onChangeText={onChangeInput}
           onSelectionChange={handleSelectionChange}
-          selection={selection}
+          selection={controlledSelection ?? undefined}
         >
           <Text>
             {parts.map(({ text, partType, data }, index) =>

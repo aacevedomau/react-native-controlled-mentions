@@ -42,22 +42,32 @@ const MentionInput = (_a) => {
     var { value, onChange, partTypes = [], inputRef: propInputRef, containerStyle, onSelectionChange, renderListSuggestions, renderListSelection, autoCompleteSuggestions = {}, processChangedText, textInputComponent } = _a, textInputProps = __rest(_a, ["value", "onChange", "partTypes", "inputRef", "containerStyle", "onSelectionChange", "renderListSuggestions", "renderListSelection", "autoCompleteSuggestions", "processChangedText", "textInputComponent"]);
     const textInput = (0, react_1.useRef)(null);
     const [selection, setSelection] = (0, react_1.useState)({ start: 0, end: 0 });
+    const [controlledSelection, setControlledSelection] = (0, react_1.useState)(null);
     const InputComponent = (textInputComponent || react_native_1.TextInput);
     const { plainText, parts } = (0, react_1.useMemo)(() => (0, utils_1.parseValue)(value, partTypes), [value, partTypes]);
     (0, react_1.useEffect)(() => {
         if (plainText.length === 0 &&
             (selection.start !== 0 || selection.end !== 0)) {
             console.log("Reset cursor to start");
-            requestAnimationFrame(() => {
-                setSelection({ start: 0, end: 0 });
-            });
+            setSelection({ start: 0, end: 0 });
         }
     }, [plainText, selection.end, selection.start]);
+    (0, react_1.useEffect)(() => {
+        if (controlledSelection &&
+            controlledSelection.start === selection.start &&
+            controlledSelection.end === selection.end) {
+            setControlledSelection(null);
+        }
+    }, [controlledSelection, selection.end, selection.start]);
     const handleSelectionChange = (event) => {
-        setSelection(event.nativeEvent.selection);
+        const nextSelection = event.nativeEvent.selection;
+        setSelection(nextSelection);
         onSelectionChange === null || onSelectionChange === void 0 ? void 0 : onSelectionChange(event);
     };
     const onChangeInput = (changedText) => {
+        if (controlledSelection) {
+            setControlledSelection(null);
+        }
         const nextChangedText = processChangedText
             ? processChangedText(changedText, { plainText, parts, selection })
             : changedText;
@@ -111,9 +121,11 @@ const MentionInput = (_a) => {
                     triggerKeywordLength;
         }
         console.log("3- Next cursor position:", nextCursor);
-        setTimeout(() => {
-            setSelection({ start: nextCursor, end: nextCursor });
-        }, 1000);
+        requestAnimationFrame(() => {
+            const nextSelection = { start: nextCursor, end: nextCursor };
+            setSelection(nextSelection);
+            setControlledSelection(nextSelection);
+        });
     };
     const handleTextInputRef = (ref) => {
         textInput.current = ref;
@@ -131,7 +143,7 @@ const MentionInput = (_a) => {
             onSuggestionPress: onSuggestionPress(activeTrigger || partTypes[0], false),
         }),
         react_1.default.createElement(react_native_1.View, { style: containerStyle },
-            react_1.default.createElement(InputComponent, Object.assign({ multiline: true }, textInputProps, { ref: handleTextInputRef, onChangeText: onChangeInput, onSelectionChange: handleSelectionChange, selection: selection }),
+            react_1.default.createElement(InputComponent, Object.assign({ multiline: true }, textInputProps, { ref: handleTextInputRef, onChangeText: onChangeInput, onSelectionChange: handleSelectionChange, selection: controlledSelection !== null && controlledSelection !== void 0 ? controlledSelection : undefined }),
                 react_1.default.createElement(react_native_1.Text, null, parts.map(({ text, partType, data }, index) => {
                     var _a, _b;
                     return partType ? (react_1.default.createElement(react_native_1.Text, { key: `${index}-${(_a = data === null || data === void 0 ? void 0 : data.trigger) !== null && _a !== void 0 ? _a : "pattern"}`, style: (_b = partType.textStyle) !== null && _b !== void 0 ? _b : utils_1.defaultMentionTextStyle }, text)) : (react_1.default.createElement(react_native_1.Text, { key: index }, text));
